@@ -1,6 +1,7 @@
 
 #include "driver.h"
 
+#include "ansi.h"
 #include "core.h"
 #include "diagnostic.h"
 #include "evaluator.h"
@@ -55,7 +56,7 @@ int RunFile(const std::string& filename) {
     std::ifstream file(filename);
 
     if (!file.is_open()) {
-        std::cerr << "error: Cannot open file '" << filename << "'\n";
+        diagnostic::ReportError("Failed to open file '" + filename + "'");
         return 1;
     }
 
@@ -69,16 +70,16 @@ int RunFile(const std::string& filename) {
 
 int Repl() {
 
-    std::cout <<
-        "============================================\n\n"
-        "Goobuscript interactive console " VERSION "\n\n"
+    std::cout << ansi::Blue << ansi::Bold << 
         "============================================\n"
-        "Type :quit to exit this shell.\n\n";
+        "GoobLang interactive console v" VERSION "\n"
+        "============================================\n" << ansi::Reset << 
+        "Type " << ansi::Magenta << ":quit" << ansi::Reset << " to exit this shell.\n\n";
 
 
     while (true) {
 
-        std::cout << "> ";
+        std::cout << ansi::Bold << ansi::Grey << "> " << ansi::Reset;
 
         std::string input;
 
@@ -138,7 +139,7 @@ int ParseAndRun(int argc, char* argv[]) {
     if (argument == "--eval" || argument == "-e") {
 
         if (argc < 3) {
-            std::cerr << "error: Expected source code after " << argument << '\n';
+            diagnostic::ReportError("Expected source code after '" + argument + "'");
             return 1;
         }
 
@@ -146,12 +147,12 @@ int ParseAndRun(int argc, char* argv[]) {
     }
 
     if (argument.starts_with("-")) {
-        std::cerr << "error: Unknown option '" << argument << "'\n";
+        diagnostic::ReportError("Unknown option '" + argument + "'");
         return 1;
     }
 
     if (argc > 2) {
-        std::cerr << "error: Too many arguments\n";
+        diagnostic::ReportError("Too many arguments");
         return 1;
     }
 

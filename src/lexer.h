@@ -7,13 +7,13 @@
 namespace parse {
 
 class Lexer {
-    public:
+public:
     Lexer(std::string source) : source(std::move(source)) {
     }
 
     std::vector<Token> Tokenize();
 
-    private:
+private:
     const std::string source;
     size_t pos = 0;
 

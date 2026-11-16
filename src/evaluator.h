@@ -4,12 +4,12 @@
 #include "value.h"
 #include <memory>
 
-class Evaluator {
-    public:
+class Evaluator { 
+public:
     Evaluator();
     Value Run(SyntaxTree &tree);
 
-    private:
+private:
     Value Evaluate(std::unique_ptr<ASTNode> &node);
 
     Value EvaluateBinary(BinaryOperation &node);

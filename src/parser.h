@@ -7,12 +7,12 @@
 namespace parse {
 
 class Parser {
-    public:
+public:
     Parser(std::vector<Token> tokens) : tokens(std::move(tokens)) {
     }
     SyntaxTree Parse();
 
-    private:
+private:
     const std::vector<Token> tokens;
     size_t pos = 0;
 
