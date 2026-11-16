@@ -16,6 +16,6 @@ private:
     Value EvaluateUnary(UnaryOperation &node);
 
     Value EvaluateLogical(BinaryOperation &node);
-    Value EvaluateComparison(parse::TokenKind &operator_, Value &lhs, Value &rhs);
-    Value EvaluateArithmetic(parse::TokenKind &operator_, Value &lhs, Value &rhs);
+    Value EvaluateComparison(parse::TokenKind operator_, const Value &lhs, const Value &rhs);
+    Value EvaluateArithmetic(parse::TokenKind operator_, const Value &lhs, const Value &rhs);
 };

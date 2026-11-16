@@ -52,6 +52,8 @@ Value Evaluator::EvaluateUnary(UnaryOperation &node) {
 
     Value value = Evaluate(node.operand);
 
+    if (!value) return value;
+
     if (node.operator_ == parse::TokenKind::Bang) {
         return !value.IsTruthy();
     }
@@ -101,34 +103,28 @@ Value Evaluator::EvaluateLogical(BinaryOperation &node) {
 
     switch (node.operator_) {
 
-        // && operator: returns the first untruthy value, or the last one
-        // if both are truthy
         case parse::TokenKind::AndAnd: {
             bool truthiness1 = value1.IsTruthy();
-
-            if (!truthiness1)
-                return value1;
+            
+            if (!truthiness1) return false;
 
             Value value2 = Evaluate(node.operand2);
-
-            // it doesn't matter if its truthy, if its false, it is the first one to be false, so that gets
-            // returned. If its true, it still gets returned, since its the last one
-            return value2;
+            if (!value2) {
+                return value2;
+            }
+            return value2.IsTruthy();
         }
 
-        // || operator: returns the first truthy operand, or the last one
-        // if both is false
         case parse::TokenKind::OrOr: {
             bool truthiness1 = value1.IsTruthy();
-
-            if (truthiness1)
-                return value1;
+            
+            if (truthiness1) return true;
 
             Value value2 = Evaluate(node.operand2);
-
-            // like the last one, it doesn't really matter if this one is
-            // truthy or falsy, as both return the last one
-            return value2;
+            if (!value2) {
+                return value2;
+            }
+            return value2.IsTruthy();
         }
 
         default:
@@ -136,7 +132,7 @@ Value Evaluator::EvaluateLogical(BinaryOperation &node) {
     }
 }
 
-Value Evaluator::EvaluateArithmetic(parse::TokenKind &operator_, Value &lhs, Value &rhs) {
+Value Evaluator::EvaluateArithmetic(parse::TokenKind operator_, const Value &lhs, const Value &rhs) {
     bool is_both_str = lhs.type == Type::String && rhs.type == Type::String;
     bool is_both_num = lhs.type == Type::Number && rhs.type == Type::Number;
 
@@ -172,7 +168,7 @@ Value Evaluator::EvaluateArithmetic(parse::TokenKind &operator_, Value &lhs, Val
     return Error;
 }
 
-Value Evaluator::EvaluateComparison(parse::TokenKind &operator_, Value &lhs, Value &rhs) {
+Value Evaluator::EvaluateComparison(parse::TokenKind operator_, const Value &lhs, const Value &rhs) {
     switch (operator_) {
         case parse::TokenKind::EqualEqual:
         case parse::TokenKind::BangEqual: {
