@@ -4,7 +4,7 @@ CXXFLAGS := -std=c++20 -Wall -Wextra
 BUILD_DIR := build
 SOURCES := $(wildcard src/*.cpp) # All .cpp files in src/ folder
 
-TARGET := gs
+TARGET := goob
 
 
 # flags based on build config

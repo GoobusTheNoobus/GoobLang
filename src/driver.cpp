@@ -107,8 +107,8 @@ int Repl() {
 void PrintHelp() {
 
     std::cout
-        << "Goobuscript " VERSION "\n\n"
-        << "Usage: gs [options] [file]\n\n"
+        << "GoobLang " VERSION "\n\n"
+        << "Usage: goob [options] [file]\n\n"
         << "Options:\n"
         << "  -e, --eval CODE    Evaluate source code\n"
         << "  -v, --version      Print version information\n"
@@ -127,7 +127,7 @@ int ParseAndRun(int argc, char* argv[]) {
     std::string argument = argv[1];
 
     if (argument == "--version" || argument == "-v") {
-        std::cout << "Goobuscript " VERSION << '\n';
+        std::cout << "GoobLang " VERSION << '\n';
         return 0;
     }
 
