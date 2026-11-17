@@ -15,6 +15,7 @@ enum class ASTNodeKind {
     UnaryOperation,
 
     VarDeclaration,
+    VarReassignment,
 
     Invalid,
 };
@@ -93,6 +94,17 @@ struct VarDeclaration : ASTNode {
         : name(std::move(name)), value(std::move(value)) {}
         
     ASTNodeKind Kind() const override { return ASTNodeKind::VarDeclaration; }
+    std::string ToString(int indent) const override;
+};
+
+struct VarReassignment : ASTNode {
+    std::string name;
+    std::unique_ptr<ASTNode> value;
+
+    VarReassignment(std::string name, std::unique_ptr<ASTNode> value) 
+        : name(std::move(name)), value(std::move(value)) {}
+        
+    ASTNodeKind Kind() const override { return ASTNodeKind::VarReassignment; }
     std::string ToString(int indent) const override;
 };
 

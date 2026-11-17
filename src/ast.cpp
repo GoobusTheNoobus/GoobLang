@@ -36,6 +36,11 @@ std::string VarDeclaration::ToString(int indent) const {
         value->ToString(indent + 2);
 }
 
+std::string VarReassignment::ToString(int indent) const {
+    return std::string(indent, ' ') + "VarReassignment(" + name + ")\n" + 
+        value->ToString(indent + 2);
+}
+
 std::string Invalid::ToString(int indent) const {
     return std::string(indent, ' ') + "Invalid()\n";
 }

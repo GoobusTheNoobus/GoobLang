@@ -18,6 +18,7 @@ private:
 
     std::unique_ptr<ASTNode> ParseStatement();
     std::unique_ptr<ASTNode> ParseLet();
+    std::unique_ptr<ASTNode> ParseReassignments();
 
     std::unique_ptr<ASTNode> ParseExpression();
 

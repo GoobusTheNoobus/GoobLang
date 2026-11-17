@@ -7,6 +7,7 @@
 struct Symbol {
     std::string name;
     Value value;
+    bool is_mut = true;
 };
 
 class ScopeStack {

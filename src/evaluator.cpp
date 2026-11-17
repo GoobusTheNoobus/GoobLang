@@ -11,9 +11,9 @@
 
 Evaluator::Evaluator() {
     symbols.PushScope();
-    symbols.Define({.name = "GOOB_VERSION", .value = std::string(VERSION)});
-    symbols.Define({.name = "GOOB_IS_COOL", .value = true});
-    symbols.Define({.name = "FUNNY_NUMBER", .value = static_cast<double>(67)});
+    symbols.Define({.name = "GOOB_VERSION", .value = std::string(VERSION), .is_mut = false});
+    symbols.Define({.name = "GOOB_IS_COOL", .value = true, .is_mut = false});
+    symbols.Define({.name = "FUNNY_NUMBER", .value = static_cast<double>(67), .is_mut = false});
 }
 
 std::optional<Value> Evaluator::Run(SyntaxTree &tree) {
@@ -51,6 +51,10 @@ std::optional<Value> Evaluator::RunStatement(std::unique_ptr<ASTNode> &node) {
 
             auto value = Evaluate(var_declaration.value);
 
+            if (!value) {
+                return std::nullopt;
+            }
+
             symbols.Define({.name = var_declaration.name, .value = value});
 
             return std::nullopt;
@@ -76,10 +80,36 @@ Value Evaluator::Evaluate(std::unique_ptr<ASTNode> &node) {
             return EvaluateBinary(static_cast<BinaryOperation &>(*node));
         case ASTNodeKind::UnaryOperation:
             return EvaluateUnary(static_cast<UnaryOperation &>(*node));
+        case ASTNodeKind::VarReassignment: // Unlike variable delcarations, reassignments return the value it was assigned
+            return EvaluateReassignment(static_cast<VarReassignment &>(*node));
         default: {
             throw std::runtime_error("Unknown ast node type id=" + std::to_string(static_cast<int>(node->Kind())));
         }
     }
+}
+
+Value Evaluator::EvaluateReassignment(VarReassignment &node) {
+
+    Symbol *lookup = symbols.LookupAllScopes(node.name);
+
+    if (!lookup) {
+        diagnostic::ReportError("Symbol '" + node.name + "' has not yet been defined.");
+        return Error;
+    }
+
+    if (!lookup->is_mut) {
+        diagnostic::ReportError("Cannot assign to '" + node.name + "', it is immutable.");
+        return Error;
+    }
+
+    Value value = Evaluate(node.value);
+
+    if (!value) {
+        return Error;
+    }
+
+    symbols.Define({.name = node.name, .value = value});
+    return value;
 }
 
 Value Evaluator::EvaluateUnary(UnaryOperation &node) {

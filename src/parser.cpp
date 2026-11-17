@@ -28,6 +28,12 @@ std::unique_ptr<ASTNode> Parser::ParseStatement() {
     switch (Peek().kind) {
         case TokenKind::Let: 
             return ParseLet();
+        case TokenKind::Identifier:
+            if (Peek(1).kind == TokenKind::Equal) {
+                return ParseReassignments();
+            }
+
+            [[fallthrough]];
         default:
             return ParseExpression();
     }
@@ -52,6 +58,16 @@ std::unique_ptr<ASTNode> Parser::ParseLet() {
     auto expr = ParseExpression();
 
     return std::make_unique<VarDeclaration>(name, std::move(expr));
+}
+
+std::unique_ptr<ASTNode> Parser::ParseReassignments() {
+    std::string name = Next().str; // We already verified that it is an identifier
+
+    Next(); // We also verified that immediately after is an equal sign
+
+    auto expr = ParseExpression();
+
+    return std::make_unique<VarReassignment>(name, std::move(expr));
 }
 
 std::unique_ptr<ASTNode> Parser::ParseExpression() {
