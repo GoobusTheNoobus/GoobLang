@@ -12,8 +12,10 @@ public:
     std::optional<Value> Run(SyntaxTree &tree);
 
 private:
-    std::optional<Value> RunStatement(std::unique_ptr<ASTNode> &node);
-    Value Evaluate(std::unique_ptr<ASTNode> &node);
+    std::optional<Value> Run(std::unique_ptr<ASTNode> &node);
+    std::optional<Value> RunVarDeclaration(VarDeclaration &node);
+    std::optional<Value> RunBlock(Block &node);
+    Value EvaluateExpression(std::unique_ptr<ASTNode> &node);
 
     Value EvaluateBinary(BinaryOperation &node);
     Value EvaluateUnary(UnaryOperation &node);

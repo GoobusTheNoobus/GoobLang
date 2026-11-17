@@ -19,6 +19,9 @@ enum class TokenKind {
     LeftParen,
     RightParen,
 
+    LeftBrace,
+    RightBrace,
+
     AndAnd,
     OrOr,
     Bang,

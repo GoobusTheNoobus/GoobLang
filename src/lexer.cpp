@@ -57,6 +57,14 @@ bool Lexer::TryTokenizeSymbol(std::vector<Token> *tokens) {
             tokens->push_back({")", TokenKind::RightParen});
             Next();
             return true;
+        case '{':
+            tokens->push_back({"{", TokenKind::LeftBrace});
+            Next();
+            return true;
+        case '}':
+            tokens->push_back({"}", TokenKind::RightBrace});
+            Next();
+            return true;
         case ';':
             tokens->push_back({";", TokenKind::Semicolon});
             Next();

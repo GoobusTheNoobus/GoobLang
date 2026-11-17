@@ -16,6 +16,7 @@ enum class ASTNodeKind {
 
     VarDeclaration,
     VarReassignment,
+    Block,
 
     Invalid,
 };
@@ -105,6 +106,14 @@ struct VarReassignment : ASTNode {
         : name(std::move(name)), value(std::move(value)) {}
         
     ASTNodeKind Kind() const override { return ASTNodeKind::VarReassignment; }
+    std::string ToString(int indent) const override;
+};
+
+struct Block : ASTNode {
+    std::vector<std::unique_ptr<ASTNode>> code;
+
+    Block() {}
+    ASTNodeKind Kind() const override { return ASTNodeKind::Block; }
     std::string ToString(int indent) const override;
 };
 

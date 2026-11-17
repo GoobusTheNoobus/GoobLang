@@ -20,6 +20,9 @@ std::string TokenKindToString(TokenKind kind) {
         "LeftParen",
         "RightParen",
 
+        "LeftBrace",
+        "RightBrace",
+
         "AndAnd",
         "OrOr",
         "Bang",

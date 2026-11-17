@@ -21,7 +21,7 @@ std::optional<Value> Evaluator::Run(SyntaxTree &tree) {
     // We store the last value that was evaluated.
     std::optional<Value> last = Value();
     for (auto &node : tree) {
-        std::optional<Value> value = RunStatement(node);
+        std::optional<Value> value = Run(node);
 
         if (!value) {
             last = value;
@@ -39,33 +39,54 @@ std::optional<Value> Evaluator::Run(SyntaxTree &tree) {
     return last;
 }
 
-std::optional<Value> Evaluator::RunStatement(std::unique_ptr<ASTNode> &node) {
+std::optional<Value> Evaluator::Run(std::unique_ptr<ASTNode> &node) {
     switch (node->Kind()) {
-        case ASTNodeKind::VarDeclaration: {
-            auto& var_declaration = static_cast<VarDeclaration &>(*node);
-
-            if (symbols.LookupTopScope(var_declaration.name)) {
-                diagnostic::ReportError("Symbol '" + var_declaration.name + "' has already been declared in the current scope.");
-                return Error;
-            }
-
-            auto value = Evaluate(var_declaration.value);
-
-            if (!value) {
-                return std::nullopt;
-            }
-
-            symbols.Define({.name = var_declaration.name, .value = value});
-
-            return std::nullopt;
-        }
+        case ASTNodeKind::VarDeclaration: 
+            return RunVarDeclaration(static_cast<VarDeclaration &>(*node));
+        
+        case ASTNodeKind::Block: 
+            return RunBlock(static_cast<Block &>(*node));
 
         default: 
-            return Evaluate(node);
+            return EvaluateExpression(node);
     }
 }
 
-Value Evaluator::Evaluate(std::unique_ptr<ASTNode> &node) {
+std::optional<Value> Evaluator::RunVarDeclaration(VarDeclaration &node) {
+
+    if (symbols.LookupTopScope(node.name)) {
+        diagnostic::ReportError("Symbol '" + node.name + "' has already been declared in the current scope.");
+        return Error;
+    }
+
+    auto value = EvaluateExpression(node.value);
+
+    if (!value) {
+        return std::nullopt;
+    }
+
+    symbols.Define({.name = node.name, .value = value});
+    return std::nullopt;
+}
+
+std::optional<Value> Evaluator::RunBlock(Block &block) {
+
+    symbols.PushScope();
+
+    for (auto &node : block.code) {
+        auto run_result = Run(node);
+
+        if(run_result && run_result->type == Type::Error) {
+            return Error;
+        }
+    }
+
+    symbols.PopScope();
+
+    return std::nullopt;
+}
+
+Value Evaluator::EvaluateExpression(std::unique_ptr<ASTNode> &node) {
 
     switch (node->Kind()) {
         case ASTNodeKind::Number:
@@ -102,7 +123,7 @@ Value Evaluator::EvaluateReassignment(VarReassignment &node) {
         return Error;
     }
 
-    Value value = Evaluate(node.value);
+    Value value = EvaluateExpression(node.value);
 
     if (!value) {
         return Error;
@@ -114,7 +135,7 @@ Value Evaluator::EvaluateReassignment(VarReassignment &node) {
 
 Value Evaluator::EvaluateUnary(UnaryOperation &node) {
 
-    Value value = Evaluate(node.operand);
+    Value value = EvaluateExpression(node.operand);
 
     if (!value) return value;
 
@@ -140,13 +161,13 @@ Value Evaluator::EvaluateBinary(BinaryOperation &node) {
     if (parse::IsLogicalOp(node.operator_))
         return EvaluateLogical(node);
 
-    Value lhs = Evaluate(node.operand1);
+    Value lhs = EvaluateExpression(node.operand1);
 
     if (!lhs) {
         return lhs;
     }
 
-    Value rhs = Evaluate(node.operand2);
+    Value rhs = EvaluateExpression(node.operand2);
 
     if (!rhs) {
         return Error;
@@ -160,7 +181,7 @@ Value Evaluator::EvaluateBinary(BinaryOperation &node) {
 
 Value Evaluator::EvaluateLogical(BinaryOperation &node) {
 
-    Value value1 = Evaluate(node.operand1);
+    Value value1 = EvaluateExpression(node.operand1);
     if (!value1) {
         return value1;
     }
@@ -172,7 +193,7 @@ Value Evaluator::EvaluateLogical(BinaryOperation &node) {
             
             if (!truthiness1) return false;
 
-            Value value2 = Evaluate(node.operand2);
+            Value value2 = EvaluateExpression(node.operand2);
             if (!value2) {
                 return value2;
             }
@@ -184,7 +205,7 @@ Value Evaluator::EvaluateLogical(BinaryOperation &node) {
             
             if (truthiness1) return true;
 
-            Value value2 = Evaluate(node.operand2);
+            Value value2 = EvaluateExpression(node.operand2);
             if (!value2) {
                 return value2;
             }

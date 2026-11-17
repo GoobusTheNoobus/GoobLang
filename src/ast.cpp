@@ -1,5 +1,6 @@
 #include "ast.h"
 #include "token.h"
+#include <sstream>
 #include <string>
 
 std::string Identifier::ToString(int indent) const {
@@ -39,6 +40,17 @@ std::string VarDeclaration::ToString(int indent) const {
 std::string VarReassignment::ToString(int indent) const {
     return std::string(indent, ' ') + "VarReassignment(" + name + ")\n" + 
         value->ToString(indent + 2);
+}
+
+std::string Block::ToString(int indent) const {
+    std::ostringstream out;
+    out << "Block()\n";
+
+    for (const auto &node: code) {
+        out << node->ToString(indent + 2);
+    } 
+
+    return out.str();
 }
 
 std::string Invalid::ToString(int indent) const {

@@ -26,6 +26,8 @@ SyntaxTree Parser::Parse() {
 
 std::unique_ptr<ASTNode> Parser::ParseStatement() {
     switch (Peek().kind) {
+        case TokenKind::LeftBrace:
+            return ParseBlock();
         case TokenKind::Let: 
             return ParseLet();
         case TokenKind::Identifier:
@@ -68,6 +70,24 @@ std::unique_ptr<ASTNode> Parser::ParseReassignments() {
     auto expr = ParseExpression();
 
     return std::make_unique<VarReassignment>(name, std::move(expr));
+}
+
+std::unique_ptr<ASTNode> Parser::ParseBlock() {
+    Next();
+
+    auto block = std::make_unique<Block>();
+
+    while (!End() && Peek().kind != TokenKind::RightBrace) {
+        block->code.push_back(ParseStatement());
+    }
+
+    if (End()) {
+        diagnostic::ReportError("Expected ')', got " + Peek().Repr() + ".");
+    }
+
+    Next(); 
+
+    return block;
 }
 
 std::unique_ptr<ASTNode> Parser::ParseExpression() {
@@ -239,7 +259,7 @@ const Token &Parser::Peek(ptrdiff_t offset) const {
 }
 
 bool Parser::End() const {
-    return pos >= tokens.size();
+    return pos >= tokens.size() - 1; 
 }
 
 const Token &Parser::Next() {
