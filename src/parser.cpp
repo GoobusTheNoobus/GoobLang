@@ -18,10 +18,40 @@ SyntaxTree Parser::Parse() {
             break;
         }
 
-        tree.push_back(ParseExpression());
+        tree.push_back(ParseStatement());
     }
 
     return tree;
+}
+
+std::unique_ptr<ASTNode> Parser::ParseStatement() {
+    switch (Peek().kind) {
+        case TokenKind::Let: 
+            return ParseLet();
+        default:
+            return ParseExpression();
+    }
+}
+
+std::unique_ptr<ASTNode> Parser::ParseLet() {
+    Next(); // Consume the let
+
+    std::string name;
+    if (Peek().kind != TokenKind::Identifier) {
+        diagnostic::ReportError("Expected an identifier, got '" + Peek().str + "'");
+    } else {
+        name = Next().str;
+    }
+
+    if (Peek().kind != TokenKind::Equal) {
+        diagnostic::ReportError("Expected '=', got '" + Peek().str + "'");
+    } else {
+        Next();
+    }
+
+    auto expr = ParseExpression();
+
+    return std::make_unique<VarDeclaration>(name, std::move(expr));
 }
 
 std::unique_ptr<ASTNode> Parser::ParseExpression() {

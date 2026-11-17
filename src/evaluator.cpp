@@ -5,6 +5,7 @@
 #include "symbol.h"
 #include "token.h"
 #include "value.h"
+#include <optional>
 #include <stdexcept>
 #include <string>
 
@@ -15,15 +16,20 @@ Evaluator::Evaluator() {
     symbols.Define({.name = "FUNNY_NUMBER", .value = static_cast<double>(67)});
 }
 
-Value Evaluator::Run(SyntaxTree &tree) {
+std::optional<Value> Evaluator::Run(SyntaxTree &tree) {
 
     // We store the last value that was evaluated.
-    Value last = Value();
+    std::optional<Value> last = Value();
     for (auto &node : tree) {
-        Value value = Evaluate(node);
+        std::optional<Value> value = RunStatement(node);
 
         if (!value) {
-            return Error;
+            last = value;
+            continue;
+        }
+
+        if (value->type == Type::Error) {
+            return std::nullopt;
         }
 
         last = value;
@@ -31,6 +37,28 @@ Value Evaluator::Run(SyntaxTree &tree) {
 
     // If the caller is the REPL, it will print this value
     return last;
+}
+
+std::optional<Value> Evaluator::RunStatement(std::unique_ptr<ASTNode> &node) {
+    switch (node->Kind()) {
+        case ASTNodeKind::VarDeclaration: {
+            auto& var_declaration = static_cast<VarDeclaration &>(*node);
+
+            if (symbols.LookupTopScope(var_declaration.name)) {
+                diagnostic::ReportError("Symbol '" + var_declaration.name + "' has already been declared in the current scope.");
+                return Error;
+            }
+
+            auto value = Evaluate(var_declaration.value);
+
+            symbols.Define({.name = var_declaration.name, .value = value});
+
+            return std::nullopt;
+        }
+
+        default: 
+            return Evaluate(node);
+    }
 }
 
 Value Evaluator::Evaluate(std::unique_ptr<ASTNode> &node) {

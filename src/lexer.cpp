@@ -160,6 +160,9 @@ bool Lexer::TryTokenizeWord(std::vector<Token> *tokens) {
     if (str == "false")
         kind = TokenKind::False;
 
+    if (str == "let")
+        kind = TokenKind::Let;
+
     tokens->push_back({str, kind});
     return true;
 }

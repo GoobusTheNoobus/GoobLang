@@ -4,13 +4,15 @@
 #include "token.h"
 #include "value.h"
 #include <memory>
+#include <optional>
 
 class Evaluator { 
 public:
     Evaluator();
-    Value Run(SyntaxTree &tree);
+    std::optional<Value> Run(SyntaxTree &tree);
 
 private:
+    std::optional<Value> RunStatement(std::unique_ptr<ASTNode> &node);
     Value Evaluate(std::unique_ptr<ASTNode> &node);
 
     Value EvaluateBinary(BinaryOperation &node);

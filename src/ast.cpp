@@ -31,6 +31,11 @@ std::string UnaryOperation::ToString(int indent) const {
          operand->ToString(indent + 2);
 }
 
+std::string VarDeclaration::ToString(int indent) const {
+    return std::string(indent, ' ') + "VarDeclaration(" + name + ")\n" +
+        value->ToString(indent + 2);
+}
+
 std::string Invalid::ToString(int indent) const {
     return std::string(indent, ' ') + "Invalid()\n";
 }

@@ -33,6 +33,7 @@ enum class TokenKind {
 
     True,
     False,
+    Let,
 
     Semicolon,
     Comma,

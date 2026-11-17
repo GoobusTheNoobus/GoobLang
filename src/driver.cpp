@@ -37,14 +37,14 @@ int RunSource(const std::string& source, Evaluator& evaluator, bool print_result
         return 1;
     }
 
-    Value result = evaluator.Run(tree);
+    auto result = evaluator.Run(tree);
 
     if (diagnostic::has_error) {
         return 1;
     }
 
-    if (print_result && result && result.type != Type::Void) {
-        std::cout << result.ToString() << '\n';
+    if (print_result && result && result->type != Type::Void && result->type != Type::Error) {
+        std::cout << result->ToString() << '\n';
     }
 
     return 0;

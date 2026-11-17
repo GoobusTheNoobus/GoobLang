@@ -14,6 +14,8 @@ enum class ASTNodeKind {
     BinaryOperation,
     UnaryOperation,
 
+    VarDeclaration,
+
     Invalid,
 };
 
@@ -80,6 +82,17 @@ struct UnaryOperation : ASTNode {
         : operand(std::move(operand)), operator_(operator_) {}
 
     ASTNodeKind Kind() const override { return ASTNodeKind::UnaryOperation; }
+    std::string ToString(int indent) const override;
+};
+
+struct VarDeclaration : ASTNode {
+    std::string name;
+    std::unique_ptr<ASTNode> value;
+
+    VarDeclaration(std::string name, std::unique_ptr<ASTNode> value) 
+        : name(std::move(name)), value(std::move(value)) {}
+        
+    ASTNodeKind Kind() const override { return ASTNodeKind::VarDeclaration; }
     std::string ToString(int indent) const override;
 };
 

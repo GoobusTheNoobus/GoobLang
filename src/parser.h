@@ -16,6 +16,9 @@ private:
     const std::vector<Token> tokens;
     size_t pos = 0;
 
+    std::unique_ptr<ASTNode> ParseStatement();
+    std::unique_ptr<ASTNode> ParseLet();
+
     std::unique_ptr<ASTNode> ParseExpression();
 
     std::unique_ptr<ASTNode> ParseLogicalOr();

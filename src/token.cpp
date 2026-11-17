@@ -5,9 +5,38 @@ namespace parse {
 std::string TokenKindToString(TokenKind kind) {
 
     constexpr const char *MAP[] = {
-        "Identifier",    "Number",     "String",    "Plus", "Minus", "Star",      "Slash",         "Equal",
-        "LeftParen",     "RightParen", "AndAnd",    "OrOr", "Bang",  "LessThan",  "LessEqualThan", "MoreThan",
-        "MoreEqualThan", "EqualEqual", "BangEqual", "True", "False", "Semicolon", "Comma",         "EndOfFile",
+        "Identifier",
+        "Number",
+        "String",
+
+        "Plus",
+        "Minus",
+        "Star",
+        "Slash",
+
+        "Equal",
+        "LeftParen",
+        "RightParen",
+
+        "AndAnd",
+        "OrOr",
+        "Bang",
+
+        "LessThan",
+        "LessEqualThan",
+        "MoreThan",
+        "MoreEqualThan",
+
+        "EqualEqual",
+        "BangEqual",
+
+        "True",
+        "False",
+        "Let",
+
+        "Semicolon",
+        "Comma",
+        "EndOfFile",
     };
 
     return MAP[static_cast<int>(kind)];
