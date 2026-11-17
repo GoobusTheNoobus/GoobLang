@@ -22,6 +22,8 @@ private:
     bool TryTokenizeNumber(std::vector<Token> *tokens);
     bool TryTokenizeString(std::vector<Token> *tokens);
 
+    void SkipComment();
+
     char Peek() const;
     char Peek(ptrdiff_t offset) const;
 

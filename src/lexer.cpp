@@ -22,6 +22,12 @@ std::vector<Token> Lexer::Tokenize() {
             continue;
         }
 
+        // Comments
+        if (cur == '/' && Peek(1) == '/') {
+            SkipComment();
+            continue;
+        }
+
         if (TryTokenizeSymbol(&tokens)) {
             continue;
         }
@@ -232,6 +238,12 @@ bool Lexer::TryTokenizeString(std::vector<Token> *tokens) {
 
     tokens->push_back({str, TokenKind::String});
     return true;
+}
+
+void Lexer::SkipComment() {
+    while (!End() && Peek() != '\n') {
+        Next();
+    }
 }
 
 char Lexer::GetEscape() {
