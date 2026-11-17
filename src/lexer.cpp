@@ -179,7 +179,7 @@ bool Lexer::TryTokenizeNumber(std::vector<Token> *tokens) {
 
         if (Peek() == '.') {
             if (dots_encountered == 1) {
-                diagnostic::ReportError("Too many dots in number literal");
+                diagnostic::ReportError("Too many dots in number literal.");
             }
 
             dots_encountered++;
@@ -206,7 +206,7 @@ bool Lexer::TryTokenizeString(std::vector<Token> *tokens) {
             Next(); // skip the backslash
 
             if (End() || Peek() == '\n') {
-                diagnostic::ReportError("Unterminated escape sequence");
+                diagnostic::ReportError("Unterminated escape sequence.");
                 break;
             }
 
@@ -218,7 +218,7 @@ bool Lexer::TryTokenizeString(std::vector<Token> *tokens) {
     }
 
     if (Peek() != quote) {
-        diagnostic::ReportError("Unterminated string literal");
+        diagnostic::ReportError("Unterminated string literal.");
     } else
         Next();
 
@@ -227,6 +227,7 @@ bool Lexer::TryTokenizeString(std::vector<Token> *tokens) {
 }
 
 char Lexer::GetEscape() {
+    char escape = Peek();
     switch (Next()) {
         case '\\':
             return '\\';
@@ -245,7 +246,7 @@ char Lexer::GetEscape() {
         case 'e':
             return '\e';
         default: {
-            diagnostic::ReportError("Unknown escape sequence");
+            diagnostic::ReportError("Unknown escape sequence '\\" + std::string(1, escape) + "'");
             return ' ';
         }
     }

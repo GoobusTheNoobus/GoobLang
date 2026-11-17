@@ -41,6 +41,7 @@ enum class TokenKind {
 };
 
 std::string TokenKindToString(TokenKind kind);
+std::string OperatorToString(TokenKind kind);
 bool IsLogicalOp(TokenKind op);
 bool IsComparisonOp(TokenKind op);
 

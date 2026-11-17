@@ -38,13 +38,13 @@ std::unique_ptr<ASTNode> Parser::ParseLet() {
 
     std::string name;
     if (Peek().kind != TokenKind::Identifier) {
-        diagnostic::ReportError("Expected an identifier, got '" + Peek().str + "'");
+        diagnostic::ReportError("Expected an identifier, got " + Peek().Repr() + ".");
     } else {
         name = Next().str;
     }
 
     if (Peek().kind != TokenKind::Equal) {
-        diagnostic::ReportError("Expected '=', got '" + Peek().str + "'");
+        diagnostic::ReportError("Expected '=', got " + Peek().Repr() + ".");
     } else {
         Next();
     }
@@ -188,7 +188,7 @@ std::unique_ptr<ASTNode> Parser::ParsePrimary() {
 
             if (Peek().kind != TokenKind::RightParen) {
                 diagnostic::ReportError(
-                    std::format("Expected ')', got {}", Peek().Repr()));
+                    std::format("Expected ')', got {}.", Peek().Repr()));
             } else
                 Next();
 
@@ -197,7 +197,7 @@ std::unique_ptr<ASTNode> Parser::ParsePrimary() {
 
         default: {
             diagnostic::ReportError(
-                std::format("Expected expression, got {}", Next().Repr()));
+                std::format("Expected expression, got {}.", Next().Repr()));
             return std::make_unique<Invalid>();
         }
     }

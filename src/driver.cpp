@@ -55,7 +55,7 @@ int RunFile(const std::string& filename) {
     std::ifstream file(filename);
 
     if (!file.is_open()) {
-        diagnostic::ReportError("Failed to open file '" + filename + "'");
+        diagnostic::ReportError("Cannot open file '" + filename + "'. (Does it exist?)");
         return 1;
     }
 
@@ -141,7 +141,7 @@ int ParseAndRun(int argc, char* argv[]) {
     if (argument == "--eval" || argument == "-e") {
 
         if (argc < 3) {
-            diagnostic::ReportError("Expected source code after '" + argument + "'");
+            diagnostic::ReportError("Expected source code after '" + argument + "'.");
             return 1;
         }
 
@@ -150,12 +150,12 @@ int ParseAndRun(int argc, char* argv[]) {
     }
 
     if (argument.starts_with("-")) {
-        diagnostic::ReportError("Unknown option '" + argument + "'");
+        diagnostic::ReportError("Unknown option '" + argument + "'.");
         return 1;
     }
 
     if (argc > 2) {
-        diagnostic::ReportError("Too many arguments");
+        diagnostic::ReportError("Too many arguments. Expected 2, got " + std::to_string(argc));
         return 1;
     }
 

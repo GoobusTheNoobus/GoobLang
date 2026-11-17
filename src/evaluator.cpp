@@ -98,8 +98,8 @@ Value Evaluator::EvaluateUnary(UnaryOperation &node) {
         }
 
         default: {
-            diagnostic::ReportError("Unary " + parse::TokenKindToString(node.operator_) +
-                                     " is not supported for type '" + TypeToString(value.type) + "'");
+            diagnostic::ReportError("Operator '" + parse::OperatorToString(node.operator_) +
+                                     "' is not supported for type '" + TypeToString(value.type) + "'.");
             return Error;
         }
     }
@@ -197,8 +197,8 @@ Value Evaluator::EvaluateArithmetic(parse::TokenKind operator_, const Value &lhs
         }
     }
 
-    diagnostic::ReportError("Binary " + parse::TokenKindToString(operator_) + " is not supported for types '" +
-                             TypeToString(lhs.type) + "' and '" + TypeToString(rhs.type) + "'");
+    diagnostic::ReportError("Operator " + parse::OperatorToString(operator_) + " is not supported for types '" +
+                             TypeToString(lhs.type) + "' and '" + TypeToString(rhs.type) + "'.");
     return Error;
 }
 
@@ -223,9 +223,9 @@ Value Evaluator::EvaluateComparison(parse::TokenKind operator_, const Value &lhs
                         is_equal = true; // nothing is always nothing :P
                         break;
                     default:
-                        diagnostic::ReportError("Binary " + parse::TokenKindToString(operator_) +
+                        diagnostic::ReportError("Operator " + parse::OperatorToString(operator_) +
                                                  " is not supported for types '" + TypeToString(lhs.type) +
-                                                 "' and '" + TypeToString(rhs.type) + "'");
+                                                 "' and '" + TypeToString(rhs.type) + "'.");
                         return Error;
                 }
             }
@@ -239,9 +239,9 @@ Value Evaluator::EvaluateComparison(parse::TokenKind operator_, const Value &lhs
         case parse::TokenKind::MoreThan: {
 
             if (!(lhs.type == Type::Number && rhs.type == Type::Number)) {
-                diagnostic::ReportError("Binary " + parse::TokenKindToString(operator_) +
+                diagnostic::ReportError("Operator " + parse::OperatorToString(operator_) +
                                          " is not supported for types '" + TypeToString(lhs.type) + "' and '" +
-                                         TypeToString(rhs.type) + "'");
+                                         TypeToString(rhs.type) + "'.");
                 return Error;
             }
 
@@ -276,6 +276,6 @@ Value Evaluator::EvaluateIdentifier(Identifier &node) {
         return symbol->value;
     }
 
-    diagnostic::ReportError("Unknown name '" + node.name + "'");
+    diagnostic::ReportError("Unknown name '" + node.name + "'.");
     return Error;
 }
