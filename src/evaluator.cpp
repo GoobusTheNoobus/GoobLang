@@ -1,12 +1,19 @@
 #include "evaluator.h"
 #include "ast.h"
+#include "core.h"
 #include "diagnostic.h"
+#include "symbol.h"
 #include "token.h"
 #include "value.h"
 #include <stdexcept>
 #include <string>
 
-Evaluator::Evaluator() = default;
+Evaluator::Evaluator() {
+    symbols.PushScope();
+    symbols.Define({.name = "GOOB_VERSION", .value = std::string(VERSION)});
+    symbols.Define({.name = "GOOB_IS_COOL", .value = true});
+    symbols.Define({.name = "FUNNY_NUMBER", .value = static_cast<double>(67)});
+}
 
 Value Evaluator::Run(SyntaxTree &tree) {
 
@@ -36,8 +43,7 @@ Value Evaluator::Evaluate(std::unique_ptr<ASTNode> &node) {
         case ASTNodeKind::Boolean:
             return static_cast<Boolean &>(*node).value;
         case ASTNodeKind::Identifier:
-            diagnostic::ReportError("Identifiers are not supported");
-            return Error;
+            return EvaluateIdentifier(static_cast<Identifier &>(*node));
         case ASTNodeKind::BinaryOperation:
             return EvaluateBinary(static_cast<BinaryOperation &>(*node));
         case ASTNodeKind::UnaryOperation:
@@ -233,4 +239,15 @@ Value Evaluator::EvaluateComparison(parse::TokenKind operator_, const Value &lhs
         default:
             throw std::runtime_error("Unknown operator " + parse::TokenKindToString(operator_));
     }
+}
+
+Value Evaluator::EvaluateIdentifier(Identifier &node) {
+    Symbol *symbol = symbols.LookupAllScopes(node.name);
+
+    if (symbol) {
+        return symbol->value;
+    }
+
+    diagnostic::ReportError("Unknown name '" + node.name + "'");
+    return Error;
 }

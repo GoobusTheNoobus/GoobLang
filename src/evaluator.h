@@ -1,5 +1,6 @@
 #pragma once
 #include "ast.h"
+#include "symbol.h"
 #include "token.h"
 #include "value.h"
 #include <memory>
@@ -14,8 +15,11 @@ private:
 
     Value EvaluateBinary(BinaryOperation &node);
     Value EvaluateUnary(UnaryOperation &node);
+    Value EvaluateIdentifier(Identifier &node);
 
     Value EvaluateLogical(BinaryOperation &node);
     Value EvaluateComparison(parse::TokenKind operator_, const Value &lhs, const Value &rhs);
     Value EvaluateArithmetic(parse::TokenKind operator_, const Value &lhs, const Value &rhs);
+
+    ScopeStack symbols;
 };

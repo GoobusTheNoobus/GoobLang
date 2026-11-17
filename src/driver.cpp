@@ -19,7 +19,7 @@ namespace driver {
 
 namespace {
 
-int RunSource(const std::string& source, bool print_result = false) {
+int RunSource(const std::string& source, Evaluator& evaluator, bool print_result = false) {
 
     diagnostic::has_error = false;
 
@@ -37,7 +37,6 @@ int RunSource(const std::string& source, bool print_result = false) {
         return 1;
     }
 
-    Evaluator evaluator;
     Value result = evaluator.Run(tree);
 
     if (diagnostic::has_error) {
@@ -65,7 +64,8 @@ int RunFile(const std::string& filename) {
         std::istreambuf_iterator<char>()
     );
 
-    return RunSource(source);
+    Evaluator evaluator;
+    return RunSource(source, evaluator);
 }
 
 int Repl() {
@@ -76,6 +76,8 @@ int Repl() {
         "============================================\n" << ansi::Reset << 
         "Type " << ansi::Magenta << ":quit" << ansi::Reset << " to exit this shell.\n\n";
 
+
+    Evaluator evaluator; // we preserve symbols between iterations
 
     while (true) {
 
@@ -97,7 +99,7 @@ int Repl() {
             continue;
         }
 
-        RunSource(input, true);
+        RunSource(input, evaluator, true);
     }
 
     return 0;
@@ -143,7 +145,8 @@ int ParseAndRun(int argc, char* argv[]) {
             return 1;
         }
 
-        return RunSource(argv[2], true);
+        Evaluator evaluator;
+        return RunSource(argv[2], evaluator, true);
     }
 
     if (argument.starts_with("-")) {
