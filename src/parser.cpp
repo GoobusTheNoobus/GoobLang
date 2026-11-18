@@ -200,8 +200,12 @@ std::unique_ptr<ASTNode> Parser::ParseUnary() {
 std::unique_ptr<ASTNode> Parser::ParsePrimary() {
 
     switch (Peek().kind) {
-        case parse::TokenKind::Number: {
-            return std::make_unique<Number>(std::stof(Next().str));
+        case parse::TokenKind::Float: {
+            return std::make_unique<Float>(std::stof(Next().str));
+        }
+
+        case parse::TokenKind::Integer: {
+            return std::make_unique<Integer>(std::stoi(Next().str));
         }
 
         case parse::TokenKind::Identifier: {

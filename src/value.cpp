@@ -1,5 +1,6 @@
 #include "value.h"
 #include <cmath>
+#include <cstdint>
 #include <optional>
 #include <stdexcept>
 #include <string>
@@ -7,8 +8,10 @@
 
 std::string TypeToString(Type type) {
     switch (type) {
-        case Type::Number:
-            return "number";
+        case Type::Integer:
+            return "int";
+        case Type::Float:
+            return "float";
         case Type::String:
             return "string";
         case Type::Boolean:
@@ -22,18 +25,19 @@ std::string TypeToString(Type type) {
 
 std::string Value::ToString() const {
     switch (type) {
-        case Type::Number: {
-            double num = *GetNum();
+        case Type::Float: {
+            double num = *GetFloat();
             if (std::isnan(num)) 
                 return "NaN";
 
             if (std::isinf(num))
                 return num > 0 ? "Inf" : "-Inf";
 
-            if (std::trunc(num) == num)
-                return std::to_string(static_cast<int>(num));
-
             return std::to_string(num);
+        }
+
+        case Type::Integer: {
+            return std::to_string(*GetInteger());
         }
 
         case Type::String: {
@@ -52,10 +56,15 @@ std::string Value::ToString() const {
 
 bool Value::IsTruthy() const {
     switch (type) {
-        case Type::Number: {
-            double num = *GetNum();
+        case Type::Float: {
+            double num = *GetFloat();
 
             return num != 0.0 && !std::isnan(num);
+        }
+
+        case Type::Integer: {
+            int32_t num = *GetInteger();
+            return num != 0;
         }
 
         case Type::String: {
@@ -76,18 +85,32 @@ bool Value::IsTruthy() const {
     }
 }
 
-std::optional<double> Value::GetNum() const {
-    if (type != Type::Number)
+std::optional<double> Value::GetFloat() const {
+    if (type != Type::Float)
         return std::nullopt;
 
-    const double *pnum = std::get_if<double>(&data);
+    const double *pfloat = std::get_if<double>(&data);
 
-    if (!pnum) {
+    if (!pfloat) {
         throw std::runtime_error("Value type does not match variant value. The "
-                                 "type is number, but the variant isnt");
+                                 "type is float, but the variant isnt");
     }
 
-    return *pnum;
+    return *pfloat;
+}
+
+std::optional<int32_t> Value::GetInteger() const {
+    if (type != Type::Integer)
+        return std::nullopt;
+
+    const int32_t *pint = std::get_if<int32_t>(&data);
+    
+    if (!pint) {
+        throw std::runtime_error("Value type does not match variant value. The "
+                                 "type is int, but the variant isnt");
+    }
+
+    return *pint;
 }
 
 std::optional<std::string> Value::GetStr() const {

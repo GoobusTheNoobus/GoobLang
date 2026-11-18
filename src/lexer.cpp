@@ -202,7 +202,7 @@ bool Lexer::TryTokenizeNumber(std::vector<Token> *tokens) {
         str += Next();
     }
 
-    tokens->push_back({str, TokenKind::Number});
+    tokens->push_back({str, dots_encountered ? TokenKind::Float : TokenKind::Integer});
     return true;
 }
 

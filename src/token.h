@@ -7,7 +7,8 @@ namespace parse {
 
 enum class TokenKind {
     Identifier,
-    Number,
+    Integer,
+    Float,
     String,
 
     Plus,

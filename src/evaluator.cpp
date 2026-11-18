@@ -89,8 +89,10 @@ std::optional<Value> Evaluator::RunBlock(Block &block) {
 Value Evaluator::EvaluateExpression(std::unique_ptr<ASTNode> &node) {
 
     switch (node->Kind()) {
-        case ASTNodeKind::Number:
-            return static_cast<Number &>(*node).value;
+        case ASTNodeKind::Integer:
+            return static_cast<Integer &>(*node).value;
+        case ASTNodeKind::Float:
+            return static_cast<Float &>(*node).value;
         case ASTNodeKind::String:
             return static_cast<String &>(*node).value;
         case ASTNodeKind::Boolean:
@@ -144,8 +146,12 @@ Value Evaluator::EvaluateUnary(UnaryOperation &node) {
     }
 
     switch (value.type) {
-        case Type::Number: {
-            return node.operator_ == parse::TokenKind::Plus ? *value.GetNum() : -(*value.GetNum());
+        case Type::Float: {
+            return node.operator_ == parse::TokenKind::Plus ? *value.GetFloat() : -(*value.GetFloat());
+        }
+
+        case Type::Integer: {
+            return node.operator_ == parse::TokenKind::Plus ? *value.GetInteger() : -(*value.GetInteger());
         }
 
         default: {
@@ -219,7 +225,9 @@ Value Evaluator::EvaluateLogical(BinaryOperation &node) {
 
 Value Evaluator::EvaluateArithmetic(parse::TokenKind operator_, const Value &lhs, const Value &rhs) {
     bool is_both_str = lhs.type == Type::String && rhs.type == Type::String;
-    bool is_both_num = lhs.type == Type::Number && rhs.type == Type::Number;
+    bool is_both_int = lhs.type == Type::Integer && rhs.type == Type::Integer;
+    bool is_both_numeric = is_both_int || (lhs.type == Type::Integer && rhs.type == Type::Float) ||
+        (lhs.type == Type::Float && rhs.type == Type::Integer);
 
     if (is_both_str && operator_ == parse::TokenKind::Plus) {
 
@@ -229,10 +237,37 @@ Value Evaluator::EvaluateArithmetic(parse::TokenKind operator_, const Value &lhs
         return str1 + str2;
     }
 
-    if (is_both_num) {
+    if (is_both_int) {
 
-        double num1 = *lhs.GetNum();
-        double num2 = *rhs.GetNum();
+        int32_t num1 = *lhs.GetInteger();
+        int32_t num2 = *rhs.GetInteger();
+
+        switch (operator_) {
+            case parse::TokenKind::Plus:
+                return num1 + num2;
+            case parse::TokenKind::Minus:
+                return num1 - num2;
+            case parse::TokenKind::Star:
+                return num1 * num2;
+            case parse::TokenKind::Slash:
+                if (num2 == 0) {
+                    diagnostic::ReportError("Cannot perform integer division on 0.");
+                    return Error;
+                }
+
+                return num1 / num2;
+            default:
+                throw std::runtime_error("Unknown operator " + parse::TokenKindToString(operator_));
+        }
+    }
+
+    if (is_both_numeric) {
+        // Convert both to floating points
+
+        double num1;
+        double num2;
+        if (lhs.GetInteger()) { num1 = *lhs.GetInteger(); } else { num1 = *lhs.GetFloat(); }
+        if (rhs.GetInteger()) { num2 = *rhs.GetInteger(); } else { num2 = *rhs.GetFloat(); }
 
         switch (operator_) {
             case parse::TokenKind::Plus:
@@ -264,8 +299,11 @@ Value Evaluator::EvaluateComparison(parse::TokenKind operator_, const Value &lhs
                     case Type::Boolean:
                         is_equal = *lhs.GetBool() == *rhs.GetBool();
                         break;
-                    case Type::Number:
-                        is_equal = *lhs.GetNum() == *rhs.GetNum();
+                    case Type::Integer:
+                        is_equal = *lhs.GetInteger() == *rhs.GetInteger();
+                        break;
+                    case Type::Float:
+                        is_equal = *lhs.GetFloat() == *rhs.GetFloat();
                         break;
                     case Type::String:
                         is_equal = *lhs.GetStr() == *rhs.GetStr();
@@ -281,6 +319,30 @@ Value Evaluator::EvaluateComparison(parse::TokenKind operator_, const Value &lhs
                 }
             }
 
+            else {
+                bool is_both_int = lhs.type == Type::Integer && rhs.type == Type::Integer;
+                bool is_both_numeric = is_both_int || (lhs.type == Type::Integer && rhs.type == Type::Float) ||
+                    (lhs.type == Type::Float && rhs.type == Type::Integer); 
+                    
+                if (is_both_int) {
+                    auto num1 = *lhs.GetInteger();
+                    auto num2 = *rhs.GetInteger();
+
+                    is_equal = num1 == num2;
+                } 
+
+                else if (is_both_numeric) {
+                    // Convert both to floating points
+
+                    double num1;
+                    double num2;
+                    if (lhs.GetInteger()) { num1 = *lhs.GetInteger(); } else { num1 = *lhs.GetFloat(); }
+                    if (rhs.GetInteger()) { num2 = *rhs.GetInteger(); } else { num2 = *rhs.GetFloat(); }
+
+                    is_equal = num1 == num2;
+                }
+            }
+
             return operator_ == parse::TokenKind::EqualEqual ? is_equal : !is_equal;
         }
 
@@ -289,25 +351,44 @@ Value Evaluator::EvaluateComparison(parse::TokenKind operator_, const Value &lhs
         case parse::TokenKind::MoreEqualThan:
         case parse::TokenKind::MoreThan: {
 
-            if (!(lhs.type == Type::Number && rhs.type == Type::Number)) {
+            if (!((lhs.type == Type::Integer || lhs.type == Type::Float) && 
+                (rhs.type == Type::Integer || rhs.type == Type::Float))) {
                 diagnostic::ReportError("Operator " + parse::OperatorToString(operator_) +
                                          " is not supported for types '" + TypeToString(lhs.type) + "' and '" +
                                          TypeToString(rhs.type) + "'.");
                 return Error;
             }
 
-            double lhs_num = *lhs.GetNum();
-            double rhs_num = *rhs.GetNum();
+            if (lhs.type == Type::Integer && rhs.type == Type::Integer) {
+                auto num1 = *lhs.GetInteger();
+                auto num2 = *rhs.GetInteger();
+
+                switch (operator_) {
+                    case parse::TokenKind::LessThan:
+                        return num1 < num2;
+                    case parse::TokenKind::LessEqualThan:
+                        return num1 <= num2;
+                    case parse::TokenKind::MoreThan:
+                        return num1 > num2;
+                    case parse::TokenKind::MoreEqualThan:
+                        return num1 >= num2;
+                    default:
+                        throw std::runtime_error("Unknown comparison operator");
+                }
+            }
+
+            double num1 = *lhs.GetFloat();
+            double num2 = *rhs.GetFloat();
 
             switch (operator_) {
                 case parse::TokenKind::LessThan:
-                    return lhs_num < rhs_num;
+                    return num1 < num2;
                 case parse::TokenKind::LessEqualThan:
-                    return lhs_num <= rhs_num;
+                    return num1 <= num2;
                 case parse::TokenKind::MoreThan:
-                    return lhs_num > rhs_num;
+                    return num1 > num2;
                 case parse::TokenKind::MoreEqualThan:
-                    return lhs_num >= rhs_num;
+                    return num1 >= num2;
                 default:
                     throw std::runtime_error("Unknown comparison operator");
             }

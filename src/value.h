@@ -4,7 +4,8 @@
 #include <variant>
 
 enum class Type {
-    Number,
+    Integer,
+    Float,
     String,
     Boolean,
 
@@ -15,10 +16,12 @@ enum class Type {
 std::string TypeToString(Type type);
 
 struct Value {
-    std::variant<double, std::string, bool, std::monostate> data;
+    std::variant<int32_t, double, std::string, bool, std::monostate> data;
     Type type;
 
-    Value(double data) : data(data), type(Type::Number) {
+    Value(int32_t data) : data(data), type(Type::Integer) {
+    }
+    Value(double data) : data(data), type(Type::Float) {
     }
     Value(std::string data) : data(std::move(data)), type(Type::String) {
     }
@@ -35,7 +38,8 @@ struct Value {
 
     std::string ToString() const;
 
-    std::optional<double> GetNum() const;
+    std::optional<int32_t> GetInteger() const;
+    std::optional<double> GetFloat() const;
     std::optional<std::string> GetStr() const;
     std::optional<bool> GetBool() const;
 

@@ -11,8 +11,12 @@ std::string String::ToString(int indent) const {
     return std::string(indent, ' ') + "String('" + value + "')\n";
 }
 
-std::string Number::ToString(int indent) const {
-    return std::string(indent, ' ') + "Number(" + std::to_string(value) + ")\n";
+std::string Integer::ToString(int indent) const {
+    return std::string(indent, ' ') + "Integer(" + std::to_string(value) + ")\n";
+}
+
+std::string Float::ToString(int indent) const {
+    return std::string(indent, ' ') + "Float(" + std::to_string(value) + ")\n";
 }
 
 std::string Boolean::ToString(int indent) const {

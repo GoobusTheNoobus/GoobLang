@@ -1,5 +1,6 @@
 #pragma once
 #include "token.h"
+#include <cstdint>
 #include <memory>
 #include <ostream>
 #include <string>
@@ -7,7 +8,8 @@
 
 enum class ASTNodeKind {
     Identifier,
-    Number,
+    Integer,
+    Float,
     String,
     Boolean,
 
@@ -47,11 +49,19 @@ struct String : ASTNode {
     std::string ToString(int indent) const override;
 };
 
-struct Number : ASTNode {
+struct Integer : ASTNode {
+    int32_t value;
+
+    Integer(int32_t value) : value(value) {}
+    ASTNodeKind Kind() const override { return ASTNodeKind::Integer; }
+    std::string ToString(int indent) const override;
+};
+
+struct Float : ASTNode {
     double value;
 
-    Number(double value) : value(value) {}
-    ASTNodeKind Kind() const override { return ASTNodeKind::Number; }
+    Float(double value) : value(value) {}
+    ASTNodeKind Kind() const override { return ASTNodeKind::Float; }
     std::string ToString(int indent) const override;
 };
 

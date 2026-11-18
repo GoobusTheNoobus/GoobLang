@@ -8,7 +8,8 @@ std::string TokenKindToString(TokenKind kind) {
 
     constexpr const char *MAP[] = {
         "Identifier",
-        "Number",
+        "Integer",
+        "Float",
         "String",
 
         "Plus",
